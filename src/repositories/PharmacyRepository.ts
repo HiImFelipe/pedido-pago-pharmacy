@@ -16,24 +16,51 @@ class PharmacyRepository implements IPharmacyRepository {
 		});
 	}
 
+	public async getAll(
+		query?: PharmacyIndexOptions
+	): Promise<{ pharmacies: Pharmacy[]; totalPharmacies: number }> {
+		const take = query && query.take || 10;
+		const page = query && query.page || 1;
+		const skip = (page - 1) * take;
+		const keyword = query && query.keyword || '';
+
+		const [pharmacies, totalPharmacies] = await this.ormRepository.findAndCount(
+			{
+				where: { name: Like(`%${keyword}%`) },
+				order: { name: "DESC" },
+				take,
+				skip,
+			}
+		);
+
+		return { pharmacies, totalPharmacies };
+	}
+
+	public async getAllByName(name: string): Promise<Pharmacy[]> {
+		return this.ormRepository.find({
+			where: { name: Like(`%${name}%`) },
+		});
+	}
+
 	public async save(pharmacy: Pharmacy): Promise<Pharmacy> {
 		return this.ormRepository.save(pharmacy);
 	}
 
 	public async index(
-		query: PharmacyIndexOptions
+		query?: PharmacyIndexOptions
 	): Promise<{ data: Pharmacy[]; count: number }> {
-		const take = query.take || 10;
-		const page = query.page || 1;
+		const take = query && query.take || 10;
+		const page = query && query.page || 1;
+		const keyword = query && query.keyword || "";
 		const skip = (page - 1) * take;
-		const keyword = query.keyword || "";
 
-		const [pharmacyList, totalPharmacies] = await this.ormRepository.findAndCount({
-			where: { name: Like(`%${keyword}%`) },
-			order: { name: "DESC" },
-			take,
-			skip,
-		});
+		const [pharmacyList, totalPharmacies] =
+			await this.ormRepository.findAndCount({
+				where: { name: Like(`%${keyword}%`) },
+				order: { name: "DESC" },
+				take,
+				skip,
+			});
 
 		return {
 			data: pharmacyList,
