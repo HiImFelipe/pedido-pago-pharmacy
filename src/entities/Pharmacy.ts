@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import {
+	Entity,
+	Column,
+	PrimaryGeneratedColumn,
+	CreateDateColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 @Entity("pharmacies")
 class Pharmacy {
@@ -37,6 +43,19 @@ class Pharmacy {
 
 	@Column()
 	responsibleName: string;
+
+	@CreateDateColumn({
+		type: "timestamp",
+		default: () => "CURRENT_TIMESTAMP(6)",
+	})
+	public createdAt: Date;
+
+	@UpdateDateColumn({
+		type: "timestamp",
+		default: () => "CURRENT_TIMESTAMP(6)",
+		onUpdate: "CURRENT_TIMESTAMP(6)",
+	})
+	public updatedAt: Date;
 }
 
 export default Pharmacy;
