@@ -4,7 +4,12 @@ import {
 	ServerCredentials,
 } from "@grpc/grpc-js";
 import { loadSync } from "@grpc/proto-loader";
+import { createConnection } from "typeorm";
 import path from "path";
+
+import "./src/DI";
+
+createConnection().catch((e) => console.log(e));
 
 const packageDefinition = loadSync(
 	path.resolve(__dirname, "src", "pb", "pharmacy.proto"),
