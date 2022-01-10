@@ -27,7 +27,7 @@ export class PharmacyService implements IPharmacyService {
 	async getAllPharmacies(
 		call: Record<string, any>,
 		callback: ICallback
-	): Promise<any> {
+	): Promise<void> {
 		const pharmacies = await this.pharmaciesRepository.getAll();
 
 		return callback(null, pharmacies);
