@@ -12,11 +12,17 @@ message Pharmacy {
     string responsibleName = 8;
 }
 
+message QueryParams {
+    int64 page = 1;
+	int64 take = 2;
+	string keyword = 3;
+}
+
 message NoParams {}
 
 service PharmacyService {
     rpc getPharmacy(Pharmacy) returns (Pharmacy);
-    rpc getAllPharmacies(NoParams) returns (stream Pharmacy);
+    rpc getAllPharmacies(QueryParams) returns (stream Pharmacy);
     rpc createPharmacy(Pharmacy) returns (Pharmacy);
     rpc deletePharmacy(Pharmacy) returns (NoParams);
     rpc updatePharmacy(Pharmacy) returns (Pharmacy);
