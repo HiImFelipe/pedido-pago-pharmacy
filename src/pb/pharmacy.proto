@@ -1,0 +1,23 @@
+syntax = "proto3";
+package pharmacyservice;
+
+message Pharmacy {
+    string logo = 1;
+    string name = 2;
+    string address = 3;
+    string phone = 4;
+    string cnpj = 5;
+    string openingTime = 6;
+    string closingTime = 7;
+    string responsibleName = 8;
+}
+
+message NoParams {}
+
+service PharmacyService {
+    rpc getPharmacy(Pharmacy) returns (Pharmacy);
+    rpc getAllPharmacies(NoParams) returns (stream Pharmacy);
+    rpc createPharmacy(Pharmacy) returns (Pharmacy);
+    rpc deletePharmacy(Pharmacy) returns (NoParams);
+    rpc updatePharmacy(Pharmacy) returns (Pharmacy);
+}
