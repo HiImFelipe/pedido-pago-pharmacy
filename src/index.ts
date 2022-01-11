@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import "reflect-metadata";
 import {
 	loadPackageDefinition,
@@ -8,14 +10,14 @@ import { loadSync } from "@grpc/proto-loader";
 import { createConnection } from "typeorm";
 import path from "path";
 
-import "./src/DI";
+import "./DI";
 import { container } from "tsyringe";
-import { PharmacyService } from "./src/services/PharmacyService";
+import { PharmacyService } from "./services/PharmacyService";
 
 createConnection()
 	.then(() => {
 		const packageDefinition = loadSync(
-			path.resolve(__dirname, "src", "pb", "pharmacy.proto"),
+			path.resolve(__dirname, "pb", "pharmacy.proto"),
 			{
 				keepCase: true,
 				longs: String,
