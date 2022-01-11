@@ -14,6 +14,7 @@ export default class TestUtil {
 		pharmacy.createdAt = data?.createdAt || new Date();
 		pharmacy.updatedAt = data?.updatedAt || new Date();
 		pharmacy.responsibleName = data?.address || "Test User";
+		pharmacy.isSubsidiary = data?.isSubsidiary || false;
 
 		return pharmacy;
 	}
