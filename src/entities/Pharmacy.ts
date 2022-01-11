@@ -44,6 +44,9 @@ class Pharmacy {
 	@Column()
 	responsibleName: string;
 
+	@Column("boolean", { default: false })
+	isSubsidiary: boolean;
+
 	@CreateDateColumn({
 		type: "timestamp",
 		default: () => "CURRENT_TIMESTAMP(6)",

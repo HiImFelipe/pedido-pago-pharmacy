@@ -10,6 +10,9 @@ message Pharmacy {
     string openingTime = 6;
     string closingTime = 7;
     string responsibleName = 8;
+    bool isSubsidiary = 9;
+    string createdAt = 10;
+    string updatedAt = 11;
 }
 
 message QueryParams {
