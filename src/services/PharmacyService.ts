@@ -1,4 +1,5 @@
 import { injectable, inject } from "tsyringe";
+import { ICallback } from "../../@types/Proto";
 import IPharmacyRepository from "../repositories/IPharmacyRepository";
 import { IPharmacyService } from "./IPharmacyService";
 

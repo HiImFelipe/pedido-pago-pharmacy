@@ -1,3 +1,4 @@
+import { PharmacyIndexOptions } from '../../@types/QueryOptions';
 import Pharmacy from '../entities/Pharmacy';
 
 export default interface IPharmacyRepository {

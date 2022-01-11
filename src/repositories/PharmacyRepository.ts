@@ -2,6 +2,7 @@ import { getRepository, Like, Repository } from "typeorm";
 
 import IPharmacyRepository from "./IPharmacyRepository";
 import Pharmacy from "../entities/Pharmacy";
+import { PharmacyIndexOptions } from "../../@types/QueryOptions";
 
 class PharmacyRepository implements IPharmacyRepository {
 	private ormRepository: Repository<Pharmacy>;

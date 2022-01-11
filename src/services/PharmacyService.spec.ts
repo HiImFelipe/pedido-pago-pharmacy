@@ -1,6 +1,7 @@
 import TestUtil from "../utils/testUtils";
 import { PharmacyService } from "./PharmacyService";
 import Pharmacy from "../entities/Pharmacy";
+import { PharmacyIndexOptions } from "../../@types/QueryOptions";
 
 describe("PharmacyService", () => {
 	// The intention is not to test the repository functions, but to test the service,

@@ -1,4 +1,4 @@
-interface PharmacyIndexOptions {
+export interface PharmacyIndexOptions {
 	page?: number;
 	take?: number;
 	keyword?: string;
