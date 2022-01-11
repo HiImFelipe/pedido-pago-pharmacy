@@ -5,8 +5,8 @@ import { IPharmacyService } from "./IPharmacyService";
 @injectable()
 export class PharmacyService implements IPharmacyService {
 	constructor(
-		@inject("PharmaciesRepository")
-		private pharmaciesRepository: IPharmacyRepository
+		@inject("PharmacyRepository")
+		private pharmacyRepository: IPharmacyRepository
 	) {}
 
 	async getPharmacy(
@@ -15,7 +15,7 @@ export class PharmacyService implements IPharmacyService {
 	): Promise<void> {
 		const { id } = call.request;
 
-		const pharmacy = await this.pharmaciesRepository.getById(id);
+		const pharmacy = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacy) {
 			return callback(null, { error: "Pharmacy not found!" });
@@ -28,7 +28,7 @@ export class PharmacyService implements IPharmacyService {
 		call: Record<string, any>,
 		callback: ICallback
 	): Promise<void> {
-		const pharmacies = await this.pharmaciesRepository.getAll();
+		const pharmacies = await this.pharmacyRepository.getAll();
 
 		return callback(null, pharmacies);
 	}
@@ -39,7 +39,7 @@ export class PharmacyService implements IPharmacyService {
 	): Promise<void> {
 		const { name } = call.request;
 
-		const pharmacyFound = await this.pharmaciesRepository.getAllByName(name);
+		const pharmacyFound = await this.pharmacyRepository.getAllByName(name);
 
 		if (pharmacyFound.length > 0) {
 			if (pharmacyFound.length > 3) {
@@ -47,11 +47,11 @@ export class PharmacyService implements IPharmacyService {
 					error: "Maximum subsidiaries reached",
 				});
 			}
-			const pharmacy = await this.pharmaciesRepository.save(call.request);
+			const pharmacy = await this.pharmacyRepository.save(call.request);
 
 			return callback(null, { ...pharmacy, isSubsidiary: true });
 		}
-		const pharmacy = await this.pharmaciesRepository.save(call.request);
+		const pharmacy = await this.pharmacyRepository.save(call.request);
 
 		return callback(null, pharmacy);
 	}
@@ -62,13 +62,13 @@ export class PharmacyService implements IPharmacyService {
 	): Promise<void> {
 		const { id } = call.request;
 
-		const pharmacyFound = await this.pharmaciesRepository.getById(id);
+		const pharmacyFound = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacyFound) {
 			return callback(null, { error: "Pharmacy not found!" });
 		}
 
-		const pharmacy = await this.pharmaciesRepository.update(id, call.request);
+		const pharmacy = await this.pharmacyRepository.update(id, call.request);
 
 		return callback(null, pharmacy);
 	}
@@ -79,13 +79,13 @@ export class PharmacyService implements IPharmacyService {
 	): Promise<void> {
 		const { id } = call.request;
 
-		const pharmacyFound = await this.pharmaciesRepository.getById(id);
+		const pharmacyFound = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacyFound) {
 			return callback(null, { error: "Pharmacy not found!" });
 		}
 
-		await this.pharmaciesRepository.delete(id);
+		await this.pharmacyRepository.delete(id);
 
 		return callback(null, {});
 	}
