@@ -21,7 +21,7 @@ export class PharmacyService implements IPharmacyService {
 			return callback(null, { error: "Pharmacy not found!" });
 		}
 
-		return callback(null, { ...pharmacy, password: undefined });
+		return callback(null, pharmacy);
 	}
 
 	async getAllPharmacies(
@@ -41,13 +41,19 @@ export class PharmacyService implements IPharmacyService {
 
 		const pharmacyFound = await this.pharmaciesRepository.getAllByName(name);
 
-		if (pharmacyFound) {
-			return callback(null, { error: "Pharmacy already exists!" });
+		if (pharmacyFound.length > 0) {
+			if (pharmacyFound.length > 3) {
+				return callback(null, {
+					error: "Maximum subsidiaries reached",
+				});
+			}
+			const pharmacy = await this.pharmaciesRepository.save(call.request);
+
+			return callback(null, { ...pharmacy, isSubsidiary: true });
 		}
+		const pharmacy = await this.pharmaciesRepository.save(call.request);
 
-		const pharmacy = await this.pharmaciesRepository.create(call.request);
-
-		return callback(null, { ...pharmacy, password: undefined });
+		return callback(null, pharmacy);
 	}
 
 	async updatePharmacy(
@@ -64,7 +70,7 @@ export class PharmacyService implements IPharmacyService {
 
 		const pharmacy = await this.pharmaciesRepository.update(id, call.request);
 
-		return callback(null, { ...pharmacy, password: undefined });
+		return callback(null, pharmacy);
 	}
 
 	async deletePharmacy(
