@@ -48,16 +48,22 @@ describe("PharmacyService", () => {
 
 			mockRepository.getAll.mockReturnValue(
 				new Promise((resolve) =>
-					resolve({ pharmacies: [pharmacy, pharmacy], totalPharmacies: 2 })
+					resolve({ pharmacies: Array(2).fill(pharmacy), totalPharmacies: 2 })
 				)
 			);
+
+			const parsedPharmacy = {
+				...pharmacy,
+				createdAt: pharmacy.createdAt.toISOString(),
+				updatedAt: pharmacy.updatedAt.toISOString(),
+			};
 
 			await service.getAllPharmacies({}, (err, res) => {
 				expect(err).toBeNull();
 				expect(res.pharmacies).toHaveLength(2);
 				expect(res.totalPharmacies).toBe(2);
 				expect(res).toEqual({
-					pharmacies: [pharmacy, pharmacy],
+					pharmacies: Array(2).fill(parsedPharmacy),
 					totalPharmacies: 2,
 				});
 			});
@@ -75,7 +81,11 @@ describe("PharmacyService", () => {
 			);
 			await service.getPharmacy({ request: { id: 1 } }, (err, res) => {
 				expect(err).toBeNull();
-				expect(res).toEqual(pharmacy);
+				expect(res).toEqual({
+					...pharmacy,
+					createdAt: pharmacy.createdAt.toISOString(),
+					updatedAt: pharmacy.updatedAt.toISOString(),
+				});
 			});
 
 			expect(mockRepository.getById).toBeCalledTimes(1);
@@ -86,8 +96,8 @@ describe("PharmacyService", () => {
 				new Promise<undefined>((resolve) => resolve(undefined))
 			);
 			await service.getPharmacy({ request: { id: 1 } }, (err, res) => {
-				expect(err).toBeNull();
-				expect(res).toHaveProperty("error", "Pharmacy not found!");
+				expect(err).toHaveProperty("message", "Pharmacy not found!");
+				expect(res).toBeNull();
 			});
 
 			expect(mockRepository.getById).toBeCalledTimes(1);
@@ -107,7 +117,11 @@ describe("PharmacyService", () => {
 
 			await service.createPharmacy({ request: { ...pharmacy } }, (err, res) => {
 				expect(err).toBeNull();
-				expect(res).toEqual(pharmacy);
+				expect(res).toEqual({
+					...pharmacy,
+					createdAt: pharmacy.createdAt.toISOString(),
+					updatedAt: pharmacy.updatedAt.toISOString(),
+				});
 				expect(res).toHaveProperty("isSubsidiary", false);
 			});
 
@@ -127,7 +141,12 @@ describe("PharmacyService", () => {
 
 			await service.createPharmacy({ request: { ...pharmacy } }, (err, res) => {
 				expect(err).toBeNull();
-				expect(res).toEqual({ ...pharmacy, isSubsidiary: true });
+				expect(res).toEqual({
+					...pharmacy,
+					createdAt: pharmacy.createdAt.toISOString(),
+					updatedAt: pharmacy.updatedAt.toISOString(),
+					isSubsidiary: true,
+				});
 				expect(res).toHaveProperty("isSubsidiary", true);
 			});
 
@@ -147,7 +166,8 @@ describe("PharmacyService", () => {
 
 			await service.createPharmacy({ request: { ...pharmacy } }, (err, res) => {
 				expect(err).toBeDefined();
-				expect(res).toHaveProperty("error", "Maximum subsidiaries reached");
+				expect(err).toHaveProperty("message", "Maximum subsidiaries reached");
+				expect(res).toBeNull();
 			});
 
 			expect(mockRepository.getAllByName).toBeCalledTimes(1);
@@ -182,8 +202,8 @@ describe("PharmacyService", () => {
 				new Promise((resolve) => resolve())
 			);
 			await service.deletePharmacy({ request: { id: 1 } }, (err, res) => {
-				expect(err).toBeNull();
-				expect(res).toHaveProperty("error", "Pharmacy not found!");
+				expect(err).toHaveProperty("message", "Pharmacy not found!");
+				expect(res).toBeNull();
 			});
 
 			expect(mockRepository.delete).toBeCalledTimes(0);
@@ -192,10 +212,10 @@ describe("PharmacyService", () => {
 	});
 
 	describe("Update an existing pharmacy", () => {
-		it("should update an pharmacy", async () => {
+		it("should update a pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			const dataToBeUpdated = { name: "Cleber" };
+			const dataToBeUpdated: Partial<Pharmacy> = { name: "Cleber" };
 
 			mockRepository.getById.mockReturnValue(
 				new Promise<Pharmacy>((resolve) => resolve(pharmacy))
@@ -208,7 +228,16 @@ describe("PharmacyService", () => {
 				{ request: { id: 1, ...dataToBeUpdated } },
 				(err, res) => {
 					expect(err).toBeNull();
-					expect(res).toEqual({ ...pharmacy, ...dataToBeUpdated });
+					expect(res).toEqual({
+						...pharmacy,
+						...dataToBeUpdated,
+						createdAt: dataToBeUpdated.createdAt
+							? dataToBeUpdated.createdAt.toISOString()
+							: pharmacy.createdAt.toISOString(),
+						updatedAt: dataToBeUpdated.updatedAt
+							? dataToBeUpdated.updatedAt.toISOString()
+							: pharmacy.updatedAt.toISOString(),
+					});
 				}
 			);
 
@@ -226,8 +255,8 @@ describe("PharmacyService", () => {
 			await service.updatePharmacy(
 				{ request: { id: 1, ...dataToBeUpdated } },
 				(err, res) => {
-					expect(err).toBeNull();
-					expect(res).toHaveProperty("error", "Pharmacy not found!");
+					expect(err).toHaveProperty("message", "Pharmacy not found!");
+					expect(res).toBeNull();
 				}
 			);
 
