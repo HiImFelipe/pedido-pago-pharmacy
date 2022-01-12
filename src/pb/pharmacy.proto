@@ -2,6 +2,24 @@ syntax = "proto3";
 package pharmacyservice;
 
 message Pharmacy {
+    string id = 1;
+    string logo = 2;
+    string name = 3;
+    string address = 4;
+    string city = 5;
+    string uf = 6;
+    string phone = 7;
+    string cnpj = 8;
+    string cep = 9;
+    string openingTime = 10;
+    string closingTime = 11;
+    string responsibleName = 12;
+    bool isSubsidiary = 13;
+    string createdAt = 14;
+    string updatedAt = 15;
+}
+
+message PharmacyCreation {
     string logo = 1;
     string name = 2;
     string address = 3;
@@ -13,9 +31,14 @@ message Pharmacy {
     string openingTime = 9;
     string closingTime = 10;
     string responsibleName = 11;
-    bool isSubsidiary = 12;
-    string createdAt = 13;
-    string updatedAt = 14;
+}
+
+message PharmacyId {
+    string id = 1;
+}
+
+message PharmacyList {
+    repeated Pharmacy pharmacies = 1;
 }
 
 message QueryParams {
@@ -28,8 +51,8 @@ message NoParams {}
 
 service PharmacyService {
     rpc getPharmacy(Pharmacy) returns (Pharmacy);
-    rpc getAllPharmacies(QueryParams) returns (stream Pharmacy);
-    rpc createPharmacy(Pharmacy) returns (Pharmacy);
-    rpc deletePharmacy(Pharmacy) returns (NoParams);
+    rpc getAllPharmacies(QueryParams) returns (PharmacyList);
+    rpc createPharmacy(PharmacyCreation) returns (Pharmacy);
+    rpc deletePharmacy(PharmacyId) returns (NoParams);
     rpc updatePharmacy(Pharmacy) returns (Pharmacy);
 }
