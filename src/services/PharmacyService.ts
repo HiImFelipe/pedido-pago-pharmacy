@@ -19,19 +19,30 @@ export class PharmacyService implements IPharmacyService {
 		const pharmacy = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacy) {
-			return callback(null, { error: "Pharmacy not found!" });
+			return callback(new Error("Pharmacy not found!"), null);
 		}
 
-		return callback(null, pharmacy);
+		return callback(null, {
+			...pharmacy,
+			createdAt: pharmacy.createdAt.toISOString(),
+			updatedAt: pharmacy.updatedAt.toISOString(),
+		});
 	}
 
 	async getAllPharmacies(
 		call: Record<string, any>,
 		callback: ICallback
 	): Promise<void> {
-		const pharmacies = await this.pharmacyRepository.getAll();
+		const { pharmacies, totalPharmacies } =
+			await this.pharmacyRepository.getAll();
 
-		return callback(null, pharmacies);
+		const parsedPharmacies = pharmacies.map((pharmacy) => ({
+			...pharmacy,
+			createdAt: pharmacy.createdAt.toISOString(),
+			updatedAt: pharmacy.updatedAt.toISOString(),
+		}));
+
+		return callback(null, { pharmacies: parsedPharmacies, totalPharmacies });
 	}
 
 	async createPharmacy(
@@ -44,17 +55,27 @@ export class PharmacyService implements IPharmacyService {
 
 		if (pharmacyFound.length > 0) {
 			if (pharmacyFound.length > 3) {
-				return callback(null, {
-					error: "Maximum subsidiaries reached",
-				});
+				return callback(new Error("Maximum subsidiaries reached"), null);
 			}
 			const pharmacy = await this.pharmacyRepository.save(call.request);
 
-			return callback(null, { ...pharmacy, isSubsidiary: true });
+			console.log({ ...pharmacy, createdAt: pharmacy.createdAt.toISOString() });
+
+			return callback(null, {
+				...pharmacy,
+				createdAt: pharmacy.createdAt.toISOString(),
+				updatedAt: pharmacy.updatedAt.toISOString(),
+				isSubsidiary: true,
+			});
 		}
+
 		const pharmacy = await this.pharmacyRepository.save(call.request);
 
-		return callback(null, pharmacy);
+		return callback(null, {
+			...pharmacy,
+			createdAt: pharmacy.createdAt.toISOString(),
+			updatedAt: pharmacy.updatedAt.toISOString(),
+		});
 	}
 
 	async updatePharmacy(
@@ -66,12 +87,16 @@ export class PharmacyService implements IPharmacyService {
 		const pharmacyFound = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacyFound) {
-			return callback(null, { error: "Pharmacy not found!" });
+			return callback(new Error("Pharmacy not found!"), null);
 		}
 
 		const pharmacy = await this.pharmacyRepository.update(id, call.request);
 
-		return callback(null, pharmacy);
+		return callback(null, {
+			...pharmacy,
+			createdAt: pharmacy.createdAt.toISOString(),
+			updatedAt: pharmacy.updatedAt.toISOString(),
+		});
 	}
 
 	async deletePharmacy(
@@ -83,7 +108,7 @@ export class PharmacyService implements IPharmacyService {
 		const pharmacyFound = await this.pharmacyRepository.getById(id);
 
 		if (!pharmacyFound) {
-			return callback(null, { error: "Pharmacy not found!" });
+			return callback(new Error("Pharmacy not found!"), null);
 		}
 
 		await this.pharmacyRepository.delete(id);
