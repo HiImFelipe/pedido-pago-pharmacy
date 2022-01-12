@@ -5,14 +5,17 @@ message Pharmacy {
     string logo = 1;
     string name = 2;
     string address = 3;
-    string phone = 4;
-    string cnpj = 5;
-    string openingTime = 6;
-    string closingTime = 7;
-    string responsibleName = 8;
-    bool isSubsidiary = 9;
-    string createdAt = 10;
-    string updatedAt = 11;
+    string city = 4;
+    string uf = 5;
+    string phone = 6;
+    string cnpj = 7;
+    string cep = 8;
+    string openingTime = 9;
+    string closingTime = 10;
+    string responsibleName = 11;
+    bool isSubsidiary = 12;
+    string createdAt = 13;
+    string updatedAt = 14;
 }
 
 message QueryParams {
