@@ -82,7 +82,7 @@ export class PharmacyService implements IPharmacyService {
 		call: Record<string, any>,
 		callback: ICallback
 	): Promise<void> {
-		const { id } = call.request;
+		const { id, ...request } = call.request;
 
 		const pharmacyFound = await this.pharmacyRepository.getById(id);
 
@@ -90,12 +90,19 @@ export class PharmacyService implements IPharmacyService {
 			return callback(new Error("Pharmacy not found!"), null);
 		}
 
-		const pharmacy = await this.pharmacyRepository.update(id, call.request);
+		// Remove itens if they are falsy values (gRPC default values)
+		for (let item in request) {
+			if (!request[item]) {
+				delete request[item];
+			}
+		}
+
+		const partialPharmacy = await this.pharmacyRepository.update(id, request);
 
 		return callback(null, {
-			...pharmacy,
-			createdAt: pharmacy.createdAt.toISOString(),
-			updatedAt: pharmacy.updatedAt.toISOString(),
+			...partialPharmacy,
+			createdAt: partialPharmacy?.createdAt?.toISOString() || "",
+			updatedAt: partialPharmacy?.updatedAt?.toISOString() || "",
 		});
 	}
 
