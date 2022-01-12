@@ -104,7 +104,7 @@ describe("PharmacyService", () => {
 		});
 	});
 
-	describe("Create an pharmacy", () => {
+	describe("Create a pharmacy", () => {
 		it("should create a new pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
@@ -176,7 +176,7 @@ describe("PharmacyService", () => {
 	});
 
 	describe("Delete an existing pharmacy", () => {
-		it("should delete an pharmacy", async () => {
+		it("should delete a pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
 			mockRepository.getById.mockReturnValue(
@@ -194,7 +194,7 @@ describe("PharmacyService", () => {
 			expect(mockRepository.getById).toBeCalledTimes(1);
 		});
 
-		it("should not delete an pharmacy (not found)", async () => {
+		it("should not delete a pharmacy (not found)", async () => {
 			mockRepository.getById.mockReturnValue(
 				new Promise<undefined>((resolve) => resolve(undefined))
 			);
@@ -245,7 +245,7 @@ describe("PharmacyService", () => {
 			expect(mockRepository.update).toBeCalledTimes(1);
 		});
 
-		it("should not update an pharmacy (pharmacy not found)", async () => {
+		it("should not update a pharmacy (pharmacy not found)", async () => {
 			const dataToBeUpdated = { name: "Cleber" };
 
 			mockRepository.getById.mockReturnValue(
