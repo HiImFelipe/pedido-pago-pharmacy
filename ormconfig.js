@@ -17,10 +17,10 @@ const distConfig = {
 	username: process.env.DB_USER,
 	password: process.env.DB_PASS,
 	database: process.env.DB_NAME,
-	entities: ["./dist/src/entities/*.js"],
-	migrations: ["migration/*.js"],
+	entities: ["./dist/src/entities/*{.ts,.js}"],
+	migrations: ["./dist/src/migration/*{.ts,.js}"],
 	cli: {
-		migrationsDir: "migration",
+		migrationsDir: "src/migration",
 	},
 };
 
