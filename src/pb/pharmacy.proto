@@ -38,7 +38,8 @@ message PharmacyId {
 }
 
 message PharmacyList {
-    repeated Pharmacy pharmacies = 1;
+    uint64 totalPharmacies = 1;
+    repeated Pharmacy pharmacies = 2;
 }
 
 message QueryParams {
