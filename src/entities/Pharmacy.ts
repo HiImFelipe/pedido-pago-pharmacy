@@ -4,7 +4,9 @@ import {
 	PrimaryGeneratedColumn,
 	CreateDateColumn,
 	UpdateDateColumn,
+	OneToMany,
 } from "typeorm";
+import Pharmacy_Products from "./PharmacyProducts";
 
 @Entity("pharmacies")
 class Pharmacy {
@@ -52,6 +54,12 @@ class Pharmacy {
 
 	@UpdateDateColumn()
 	updatedAt: Date;
+
+	@OneToMany(
+		() => Pharmacy_Products,
+		(pharmacy_products) => pharmacy_products.pharmacy
+	)
+	products: Pharmacy_Products[];
 }
 
 export default Pharmacy;
