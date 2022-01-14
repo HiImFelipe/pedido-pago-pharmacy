@@ -19,9 +19,9 @@ export default class TestUtil {
 
 		const pharmacyProducts = new PharmacyProducts();
 		pharmacyProducts.pharmacy = pharmacy;
-		pharmacyProducts.productId = "123456789";
+		pharmacyProducts.productId = "b8cfa79b-0102-4203-9809-520d24072ee4";
 
-		pharmacy.products = [pharmacyProducts];
+		pharmacy.pharmacyProducts = [pharmacyProducts];
 		return pharmacy;
 	}
 }

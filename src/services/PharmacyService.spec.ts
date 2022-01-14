@@ -2,12 +2,13 @@ import TestUtil from "../utils/testUtils";
 import { PharmacyService } from "./PharmacyService";
 import Pharmacy from "../entities/Pharmacy";
 import { PharmacyIndexOptions } from "../../@types/QueryOptions";
+import PharmacyProducts from "../entities/PharmacyProducts";
 
 describe("PharmacyService", () => {
 	// The intention is not to test the repository functions, but to test the service,
 	// so we can mock the repository functions and test the service.
 
-	const mockRepository = {
+	const mockPharmaciesRepository = {
 		getById: jest.fn<Promise<Pharmacy> | Promise<undefined>, [id: string]>(),
 		getAll: jest.fn<
 			Promise<{ pharmacies: Pharmacy[]; totalPharmacies: number }>,
@@ -27,15 +28,41 @@ describe("PharmacyService", () => {
 		delete: jest.fn<Promise<void>, [id: string]>(),
 	};
 
-	const service = new PharmacyService(mockRepository);
+	const mockPharmacyProductsRepository = {
+		getById: jest.fn<
+			Promise<PharmacyProducts> | Promise<undefined>,
+			[id: number]
+		>(),
+		getAll: jest.fn<
+			Promise<{ pharmacies: PharmacyProducts[]; totalPharmacies: number }>,
+			[query?: PharmacyIndexOptions]
+		>(),
+		save: jest.fn<Promise<PharmacyProducts>, [pharmacy: PharmacyProducts]>(),
+		index: jest.fn<
+			Promise<{ data: PharmacyProducts[]; count: number }>,
+			[query?: PharmacyIndexOptions]
+		>(),
+		create: jest.fn<Promise<PharmacyProducts>, [pharmacy: PharmacyProducts]>(),
+		update: jest.fn<
+			Promise<PharmacyProducts>,
+			[id: number, pharmacy: Omit<PharmacyProducts, "id">]
+		>(),
+		delete: jest.fn<Promise<void>, [id: number]>(),
+		deleteByPharmacyId: jest.fn<Promise<void>, [pharmacyId: string]>(),
+	};
+
+	const service = new PharmacyService(
+		mockPharmaciesRepository,
+		mockPharmacyProductsRepository
+	);
 
 	beforeEach(() => {
-		mockRepository.getById.mockReset();
-		mockRepository.getAll.mockReset();
-		mockRepository.getAllByName.mockReset();
-		mockRepository.save.mockReset();
-		mockRepository.index.mockReset();
-		mockRepository.update.mockReset();
+		mockPharmaciesRepository.getById.mockReset();
+		mockPharmaciesRepository.getAll.mockReset();
+		mockPharmaciesRepository.getAllByName.mockReset();
+		mockPharmaciesRepository.save.mockReset();
+		mockPharmaciesRepository.index.mockReset();
+		mockPharmaciesRepository.update.mockReset();
 	});
 
 	it("should be defined", () => {
@@ -46,7 +73,7 @@ describe("PharmacyService", () => {
 		it("should list all pharmacies", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getAll.mockReturnValue(
+			mockPharmaciesRepository.getAll.mockReturnValue(
 				new Promise((resolve) =>
 					resolve({ pharmacies: Array(2).fill(pharmacy), totalPharmacies: 2 })
 				)
@@ -68,7 +95,7 @@ describe("PharmacyService", () => {
 				});
 			});
 
-			expect(mockRepository.getAll).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getAll).toBeCalledTimes(1);
 		});
 	});
 
@@ -76,23 +103,24 @@ describe("PharmacyService", () => {
 		it("should get a single pharmacy's data", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<Pharmacy>((resolve) => resolve(pharmacy))
 			);
 			await service.getPharmacy({ request: { id: 1 } }, (err, res) => {
 				expect(err).toBeNull();
 				expect(res).toEqual({
 					...pharmacy,
+					products: [],
 					createdAt: pharmacy.createdAt.toISOString(),
 					updatedAt: pharmacy.updatedAt.toISOString(),
 				});
 			});
 
-			expect(mockRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
 		});
 
 		it("should not get a single pharmacy's data (not found)", async () => {
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<undefined>((resolve) => resolve(undefined))
 			);
 			await service.getPharmacy({ request: { id: 1 } }, (err, res) => {
@@ -100,7 +128,7 @@ describe("PharmacyService", () => {
 				expect(res).toBeNull();
 			});
 
-			expect(mockRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
 		});
 	});
 
@@ -108,10 +136,10 @@ describe("PharmacyService", () => {
 		it("should create a new pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getAllByName.mockReturnValue(
+			mockPharmaciesRepository.getAllByName.mockReturnValue(
 				new Promise<Pharmacy[]>((resolve) => resolve([]))
 			);
-			mockRepository.save.mockReturnValue(
+			mockPharmaciesRepository.save.mockReturnValue(
 				new Promise((resolve) => resolve(pharmacy))
 			);
 
@@ -119,23 +147,24 @@ describe("PharmacyService", () => {
 				expect(err).toBeNull();
 				expect(res).toEqual({
 					...pharmacy,
+					products: [],
 					createdAt: pharmacy.createdAt.toISOString(),
 					updatedAt: pharmacy.updatedAt.toISOString(),
 				});
 				expect(res).toHaveProperty("isSubsidiary", false);
 			});
 
-			expect(mockRepository.getAllByName).toBeCalledTimes(1);
-			expect(mockRepository.save).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getAllByName).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.save).toBeCalledTimes(1);
 		});
 
 		it("should create a new subsidiary pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getAllByName.mockReturnValue(
+			mockPharmaciesRepository.getAllByName.mockReturnValue(
 				new Promise<Pharmacy[]>((resolve) => resolve(Array(3).fill(pharmacy)))
 			);
-			mockRepository.save.mockReturnValue(
+			mockPharmaciesRepository.save.mockReturnValue(
 				new Promise((resolve) => resolve(pharmacy))
 			);
 
@@ -143,6 +172,7 @@ describe("PharmacyService", () => {
 				expect(err).toBeNull();
 				expect(res).toEqual({
 					...pharmacy,
+					products: [],
 					createdAt: pharmacy.createdAt.toISOString(),
 					updatedAt: pharmacy.updatedAt.toISOString(),
 					isSubsidiary: true,
@@ -150,17 +180,17 @@ describe("PharmacyService", () => {
 				expect(res).toHaveProperty("isSubsidiary", true);
 			});
 
-			expect(mockRepository.getAllByName).toBeCalledTimes(1);
-			expect(mockRepository.save).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getAllByName).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.save).toBeCalledTimes(1);
 		});
 
 		it("should not create a new pharmacy (exceeded maximum subsidiaries)", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getAllByName.mockReturnValue(
+			mockPharmaciesRepository.getAllByName.mockReturnValue(
 				new Promise((resolve) => resolve(Array(4).fill(pharmacy)))
 			);
-			mockRepository.save.mockReturnValue(
+			mockPharmaciesRepository.save.mockReturnValue(
 				new Promise((resolve) => resolve(pharmacy))
 			);
 
@@ -170,8 +200,8 @@ describe("PharmacyService", () => {
 				expect(res).toBeNull();
 			});
 
-			expect(mockRepository.getAllByName).toBeCalledTimes(1);
-			expect(mockRepository.save).toBeCalledTimes(0);
+			expect(mockPharmaciesRepository.getAllByName).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.save).toBeCalledTimes(0);
 		});
 	});
 
@@ -179,10 +209,10 @@ describe("PharmacyService", () => {
 		it("should delete a pharmacy", async () => {
 			const pharmacy = TestUtil.createAValidPharmacy();
 
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<Pharmacy>((resolve) => resolve(pharmacy))
 			);
-			mockRepository.delete.mockReturnValue(
+			mockPharmaciesRepository.delete.mockReturnValue(
 				new Promise((resolve) => resolve())
 			);
 			await service.deletePharmacy({ request: { id: 1 } }, (err, res) => {
@@ -190,15 +220,15 @@ describe("PharmacyService", () => {
 				expect(res).toStrictEqual({});
 			});
 
-			expect(mockRepository.delete).toBeCalledTimes(1);
-			expect(mockRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.delete).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
 		});
 
 		it("should not delete a pharmacy (not found)", async () => {
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<undefined>((resolve) => resolve(undefined))
 			);
-			mockRepository.delete.mockReturnValue(
+			mockPharmaciesRepository.delete.mockReturnValue(
 				new Promise((resolve) => resolve())
 			);
 			await service.deletePharmacy({ request: { id: 1 } }, (err, res) => {
@@ -206,8 +236,8 @@ describe("PharmacyService", () => {
 				expect(res).toBeNull();
 			});
 
-			expect(mockRepository.delete).toBeCalledTimes(0);
-			expect(mockRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.delete).toBeCalledTimes(0);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
 		});
 	});
 
@@ -217,12 +247,17 @@ describe("PharmacyService", () => {
 
 			const dataToBeUpdated: Partial<Pharmacy> = { name: "Cleber" };
 
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<Pharmacy>((resolve) => resolve(pharmacy))
 			);
-			mockRepository.update.mockReturnValue(
+			mockPharmaciesRepository.update.mockReturnValue(
 				new Promise((resolve) => resolve({ ...pharmacy, ...dataToBeUpdated }))
 			);
+			// mockPharmacyProductsRepository.getAllByPharmacyId.mockReturnValue(
+			// 	new Promise<PharmacyProducts[]>((resolve) => resolve([]))
+			// );
+
+			console.log(pharmacy);
 
 			await service.updatePharmacy(
 				{ request: { id: 1, ...dataToBeUpdated } },
@@ -241,14 +276,14 @@ describe("PharmacyService", () => {
 				}
 			);
 
-			expect(mockRepository.getById).toBeCalledTimes(1);
-			expect(mockRepository.update).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.update).toBeCalledTimes(1);
 		});
 
 		it("should not update a pharmacy (pharmacy not found)", async () => {
 			const dataToBeUpdated = { name: "Cleber" };
 
-			mockRepository.getById.mockReturnValue(
+			mockPharmaciesRepository.getById.mockReturnValue(
 				new Promise<undefined>((resolve) => resolve(undefined))
 			);
 
@@ -260,8 +295,8 @@ describe("PharmacyService", () => {
 				}
 			);
 
-			expect(mockRepository.getById).toBeCalledTimes(1);
-			expect(mockRepository.update).toBeCalledTimes(0);
+			expect(mockPharmaciesRepository.getById).toBeCalledTimes(1);
+			expect(mockPharmaciesRepository.update).toBeCalledTimes(0);
 		});
 	});
 });
