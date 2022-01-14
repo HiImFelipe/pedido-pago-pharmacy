@@ -45,8 +45,6 @@ export class PharmacyService implements IPharmacyService {
 				return callback(new Error("Pharmacy not found!"), null);
 			}
 
-			console.log(pharmacy);
-
 			const productsWithTotal = await this.getProductsData(
 				pharmacy.pharmacyProducts?.map(
 					(PharmacyProduct) => PharmacyProduct.productId
@@ -117,14 +115,16 @@ export class PharmacyService implements IPharmacyService {
 					return callback(new Error("Maximum subsidiaries reached"), null);
 
 				const pharmacy = await this.pharmacyRepository.save(call.request);
-				await Promise.all(
-					productIds.map((productId: string) =>
-						this.pharmacyProductsRepository.save({
-							productId,
-							pharmacy,
-						})
-					)
-				);
+				if (Array.isArray(productIds)) {
+					await Promise.all(
+						productIds?.map((productId: string) =>
+							this.pharmacyProductsRepository.save({
+								productId,
+								pharmacy,
+							})
+						)
+					);
+				}
 
 				return callback(null, {
 					...pharmacy,
@@ -138,14 +138,16 @@ export class PharmacyService implements IPharmacyService {
 			const pharmacy = await this.pharmacyRepository.save({
 				...call.request,
 			});
-			await Promise.all(
-				productIds.map((productId: string) =>
-					this.pharmacyProductsRepository.save({
-						productId,
-						pharmacy,
-					})
-				)
-			);
+			if (Array.isArray(productIds)) {
+				await Promise.all(
+					productIds.map((productId: string) =>
+						this.pharmacyProductsRepository.save({
+							productId,
+							pharmacy,
+						})
+					)
+				);
+			}
 
 			return callback(null, {
 				...pharmacy,
@@ -166,7 +168,13 @@ export class PharmacyService implements IPharmacyService {
 			const { id, ...request } = call.request;
 			let products;
 
-			if (call.request.productIds) {
+			const pharmacyFound = await this.pharmacyRepository.getById(id);
+
+			if (!pharmacyFound) {
+				return callback(new Error("Pharmacy not found!"), null);
+			}
+
+			if (call.request.productIds?.length > 0) {
 				const productsWithTotal = await this.getProductsData(
 					call.request.productIds,
 					callback
@@ -179,12 +187,6 @@ export class PharmacyService implements IPharmacyService {
 				products = productsWithTotal?.products;
 			}
 
-			const pharmacyFound = await this.pharmacyRepository.getById(id);
-
-			if (!pharmacyFound) {
-				return callback(new Error("Pharmacy not found!"), null);
-			}
-
 			// Remove itens if they are falsy values (gRPC default values)
 			for (let item in request) {
 				if (!request[item]) {
@@ -194,14 +196,16 @@ export class PharmacyService implements IPharmacyService {
 
 			const updatedPharmacy = await this.pharmacyRepository.update(id, request);
 			await this.pharmacyProductsRepository.deleteByPharmacyId(id);
-			await Promise.all(
-				call.request.productIds.map((productId: string) =>
-					this.pharmacyProductsRepository.save({
-						productId,
-						pharmacy: updatedPharmacy,
-					})
-				)
-			);
+			if (Array.isArray(call.request.productIds)) {
+				await Promise.all(
+					call.request.productIds.map((productId: string) =>
+						this.pharmacyProductsRepository.save({
+							productId,
+							pharmacy: updatedPharmacy,
+						})
+					)
+				);
+			}
 
 			return callback(null, {
 				...updatedPharmacy,
