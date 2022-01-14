@@ -1,4 +1,5 @@
 import Pharmacy from "../entities/Pharmacy";
+import PharmacyProducts from "../entities/PharmacyProducts";
 
 export default class TestUtil {
 	static createAValidPharmacy(data?: Partial<Pharmacy>): Pharmacy {
@@ -16,6 +17,11 @@ export default class TestUtil {
 		pharmacy.responsibleName = data?.address || "Test User";
 		pharmacy.isSubsidiary = data?.isSubsidiary || false;
 
+		const pharmacyProducts = new PharmacyProducts();
+		pharmacyProducts.pharmacy = pharmacy;
+		pharmacyProducts.productId = "123456789";
+
+		pharmacy.products = [pharmacyProducts];
 		return pharmacy;
 	}
 }
