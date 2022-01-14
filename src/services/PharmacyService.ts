@@ -1,14 +1,34 @@
 import { injectable, inject } from "tsyringe";
 import { ICallback } from "../../@types/Proto";
+import { ProductClient } from "../clients/Product";
+import Pharmacy from "../entities/Pharmacy";
 import IPharmacyRepository from "../repositories/IPharmacyRepository";
+import IPharmacyProductsRepository from "../repositories/IPharmacyProductsRepository";
 import { IPharmacyService } from "./IPharmacyService";
+
+type PharmacyWithProducts = Partial<Pharmacy> & { products: any[] };
 
 @injectable()
 export class PharmacyService implements IPharmacyService {
 	constructor(
 		@inject("PharmacyRepository")
-		private pharmacyRepository: IPharmacyRepository
+		private pharmacyRepository: IPharmacyRepository,
+		@inject("PharmacyProductsRepository")
+		private pharmacyProductsRepository: IPharmacyProductsRepository
 	) {}
+
+	private async getProductsData(
+		productIds: string[],
+		callback: ICallback
+	): Promise<{ products: any[]; totalProducts: number } | undefined> {
+		try {
+			return await ProductClient.getProductsByIds({
+				productIds,
+			});
+		} catch (error: any) {
+			callback(error, null);
+		}
+	}
 
 	async getPharmacy(
 		call: Record<string, any>,
@@ -17,14 +37,30 @@ export class PharmacyService implements IPharmacyService {
 		try {
 			const { id } = call.request;
 
-			const pharmacy = await this.pharmacyRepository.getById(id);
+			const pharmacy = await this.pharmacyRepository.getById(id, {
+				relations: ["pharmacyProducts"],
+			});
 
 			if (!pharmacy) {
 				return callback(new Error("Pharmacy not found!"), null);
 			}
 
-			return callback(null, {
+			console.log(pharmacy);
+
+			const productsWithTotal = await this.getProductsData(
+				pharmacy.pharmacyProducts?.map(
+					(PharmacyProduct) => PharmacyProduct.productId
+				),
+				callback
+			);
+
+			const pharmacyWithProducts: PharmacyWithProducts = {
 				...pharmacy,
+				products: productsWithTotal?.products || [],
+			};
+
+			return callback(null, {
+				...pharmacyWithProducts,
 				createdAt: pharmacy.createdAt.toISOString(),
 				updatedAt: pharmacy.updatedAt.toISOString(),
 			});
@@ -57,34 +93,67 @@ export class PharmacyService implements IPharmacyService {
 		call: Record<string, any>,
 		callback: ICallback
 	): Promise<void> {
-		const { name } = call.request;
+		const { name, productIds } = call.request;
+		let products: any[] | undefined = [];
 
 		try {
 			const pharmacyFound = await this.pharmacyRepository.getAllByName(name);
 
-			if (pharmacyFound.length > 0) {
-				if (pharmacyFound.length > 3) {
-					return callback(new Error("Maximum subsidiaries reached"), null);
+			if (productIds) {
+				const productsWithTotal = await this.getProductsData(
+					productIds,
+					callback
+				);
+
+				if (productsWithTotal && +productsWithTotal.totalProducts === 0) {
+					return callback(new Error("No productIds are valid"), null);
 				}
+
+				products = productsWithTotal?.products;
+			}
+
+			if (pharmacyFound.length > 0) {
+				if (pharmacyFound.length > 3)
+					return callback(new Error("Maximum subsidiaries reached"), null);
+
 				const pharmacy = await this.pharmacyRepository.save(call.request);
+				await Promise.all(
+					productIds.map((productId: string) =>
+						this.pharmacyProductsRepository.save({
+							productId,
+							pharmacy,
+						})
+					)
+				);
 
 				return callback(null, {
 					...pharmacy,
+					products: products || [],
 					createdAt: pharmacy.createdAt.toISOString(),
 					updatedAt: pharmacy.updatedAt.toISOString(),
 					isSubsidiary: true,
 				});
 			}
 
-			const pharmacy = await this.pharmacyRepository.save(call.request);
+			const pharmacy = await this.pharmacyRepository.save({
+				...call.request,
+			});
+			await Promise.all(
+				productIds.map((productId: string) =>
+					this.pharmacyProductsRepository.save({
+						productId,
+						pharmacy,
+					})
+				)
+			);
 
 			return callback(null, {
 				...pharmacy,
+				products,
 				createdAt: pharmacy.createdAt.toISOString(),
 				updatedAt: pharmacy.updatedAt.toISOString(),
 			});
 		} catch (error: any) {
-			console.log("salve");
 			return callback(error, null);
 		}
 	}
@@ -95,6 +164,20 @@ export class PharmacyService implements IPharmacyService {
 	): Promise<void> {
 		try {
 			const { id, ...request } = call.request;
+			let products;
+
+			if (call.request.productIds) {
+				const productsWithTotal = await this.getProductsData(
+					call.request.productIds,
+					callback
+				);
+
+				if (productsWithTotal && +productsWithTotal.totalProducts === 0) {
+					return callback(new Error("No productIds are valid"), null);
+				}
+
+				products = productsWithTotal?.products;
+			}
 
 			const pharmacyFound = await this.pharmacyRepository.getById(id);
 
@@ -109,12 +192,22 @@ export class PharmacyService implements IPharmacyService {
 				}
 			}
 
-			const partialPharmacy = await this.pharmacyRepository.update(id, request);
+			const updatedPharmacy = await this.pharmacyRepository.update(id, request);
+			await this.pharmacyProductsRepository.deleteByPharmacyId(id);
+			await Promise.all(
+				call.request.productIds.map((productId: string) =>
+					this.pharmacyProductsRepository.save({
+						productId,
+						pharmacy: updatedPharmacy,
+					})
+				)
+			);
 
 			return callback(null, {
-				...partialPharmacy,
-				createdAt: partialPharmacy?.createdAt?.toISOString() || "",
-				updatedAt: partialPharmacy?.updatedAt?.toISOString() || "",
+				...updatedPharmacy,
+				products,
+				createdAt: updatedPharmacy?.createdAt?.toISOString() || "",
+				updatedAt: updatedPharmacy?.updatedAt?.toISOString() || "",
 			});
 		} catch (error: any) {
 			return callback(error, null);
