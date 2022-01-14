@@ -6,7 +6,7 @@ import {
 	UpdateDateColumn,
 	OneToMany,
 } from "typeorm";
-import Pharmacy_Products from "./PharmacyProducts";
+import PharmacyProducts from "./PharmacyProducts";
 
 @Entity("pharmacies")
 class Pharmacy {
@@ -56,10 +56,11 @@ class Pharmacy {
 	updatedAt: Date;
 
 	@OneToMany(
-		() => Pharmacy_Products,
-		(pharmacy_products) => pharmacy_products.pharmacy
+		() => PharmacyProducts,
+		(pharmacy_products) => pharmacy_products.pharmacy,
+		{ cascade: true }
 	)
-	products: Pharmacy_Products[];
+	pharmacyProducts: PharmacyProducts[];
 }
 
 export default Pharmacy;

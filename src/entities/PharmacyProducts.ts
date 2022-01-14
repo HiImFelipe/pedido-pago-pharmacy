@@ -9,7 +9,7 @@ class PharmacyProducts {
 	@Column({ nullable: false })
 	productId: string;
 
-	@ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.products)
+	@ManyToOne(() => Pharmacy, (pharmacy) => pharmacy.pharmacyProducts, {onDelete: "CASCADE"})
 	pharmacy: Pharmacy;
 }
 
