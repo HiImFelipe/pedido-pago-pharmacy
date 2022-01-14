@@ -1,8 +1,9 @@
+import { FindOneOptions } from 'typeorm';
 import { PharmacyIndexOptions } from '../../@types/QueryOptions';
 import Pharmacy from '../entities/Pharmacy';
 
 export default interface IPharmacyRepository {
-    getById(id: string): Promise<Pharmacy | undefined>;
+    getById(id: string, options?: FindOneOptions<Pharmacy>): Promise<Pharmacy | undefined>;
     getAll(query?: PharmacyIndexOptions): Promise<{ pharmacies: Pharmacy[]; totalPharmacies: number }>;
     getAllByName(name: string): Promise<Pharmacy[]>;
     save(pharmacy: Pharmacy): Promise<Pharmacy>;

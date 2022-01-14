@@ -1,4 +1,4 @@
-import { getRepository, Like, Repository } from "typeorm";
+import { FindOneOptions, getRepository, Like, Repository } from "typeorm";
 
 import IPharmacyRepository from "./IPharmacyRepository";
 import Pharmacy from "../entities/Pharmacy";
@@ -11,19 +11,23 @@ class PharmacyRepository implements IPharmacyRepository {
 		this.ormRepository = getRepository(Pharmacy);
 	}
 
-	public async getById(id: string): Promise<Pharmacy | undefined> {
+	public async getById(
+		id: string,
+		options: FindOneOptions<Pharmacy>
+	): Promise<Pharmacy | undefined> {
 		return this.ormRepository.findOne({
 			where: { id },
+			...options,
 		});
 	}
 
 	public async getAll(
 		query?: PharmacyIndexOptions
 	): Promise<{ pharmacies: Pharmacy[]; totalPharmacies: number }> {
-		const take = query && query.take || 10;
-		const page = query && query.page || 1;
+		const take = (query && query.take) || 10;
+		const page = (query && query.page) || 1;
 		const skip = (page - 1) * take;
-		const keyword = query && query.keyword || '';
+		const keyword = (query && query.keyword) || "";
 
 		const [pharmacies, totalPharmacies] = await this.ormRepository.findAndCount(
 			{
@@ -50,9 +54,9 @@ class PharmacyRepository implements IPharmacyRepository {
 	public async index(
 		query?: PharmacyIndexOptions
 	): Promise<{ data: Pharmacy[]; count: number }> {
-		const take = query && query.take || 10;
-		const page = query && query.page || 1;
-		const keyword = query && query.keyword || "";
+		const take = (query && query.take) || 10;
+		const page = (query && query.page) || 1;
+		const keyword = (query && query.keyword) || "";
 		const skip = (page - 1) * take;
 
 		const [pharmacyList, totalPharmacies] =
@@ -70,11 +74,7 @@ class PharmacyRepository implements IPharmacyRepository {
 	}
 
 	public async create(pharmacy: Pharmacy): Promise<Pharmacy> {
-		const newPharmacy = this.ormRepository.create(pharmacy);
-
-		await this.save(newPharmacy);
-
-		return newPharmacy;
+		return this.ormRepository.create(pharmacy);
 	}
 
 	public async update(
