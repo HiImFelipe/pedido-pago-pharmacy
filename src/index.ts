@@ -36,7 +36,7 @@ createConnection()
 		const server = new Server();
 		server.addService(pharmacyProto.PharmacyService.service, pharmacyService);
 		server.bindAsync(
-			"localhost:50051",
+			`${process.env.APP_HOST}:50051`,
 			ServerCredentials.createInsecure(),
 			(err, port) => {
 				if (err) {
