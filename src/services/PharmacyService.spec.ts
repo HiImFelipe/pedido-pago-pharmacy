@@ -49,6 +49,7 @@ describe("PharmacyService", () => {
 		>(),
 		delete: jest.fn<Promise<void>, [id: number]>(),
 		deleteByPharmacyId: jest.fn<Promise<void>, [pharmacyId: string]>(),
+		deleteByProductId: jest.fn<Promise<void>, [productId: string]>(),
 	};
 
 	const service = new PharmacyService(

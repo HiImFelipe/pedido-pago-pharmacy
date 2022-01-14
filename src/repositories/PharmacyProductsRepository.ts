@@ -87,13 +87,19 @@ class PharmacyProductsRepository implements IPharmacyProductsRepository {
 		this.ormRepository.delete(id);
 	}
 
-    public async deleteByPharmacyId(pharmacyId: string): Promise<void> {
-        this.ormRepository.delete({
-            pharmacy: {
-                id: pharmacyId,
-            }
-        });
-    }
+	public async deleteByPharmacyId(pharmacyId: string): Promise<void> {
+		this.ormRepository.delete({
+			pharmacy: {
+				id: pharmacyId,
+			},
+		});
+	}
+
+	public async deleteByProductId(productId: string): Promise<void> {
+		this.ormRepository.delete({
+			productId,
+		});
+	}
 }
 
 export default PharmacyProductsRepository;

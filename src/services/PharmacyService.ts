@@ -238,4 +238,20 @@ export class PharmacyService implements IPharmacyService {
 			return callback(error, null);
 		}
 	}
+
+	async deleteProduct(
+		call: Record<string, any>,
+		callback: ICallback
+	): Promise<void> {
+		try {
+			const { id } = call.request;
+
+			await this.pharmacyProductsRepository.deleteByProductId(id);
+
+			return callback(null, {});
+		} catch (error: any) {
+			console.log(error);
+			return callback(error, null);
+		}
+	}
 }

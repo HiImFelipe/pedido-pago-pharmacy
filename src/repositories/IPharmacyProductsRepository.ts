@@ -21,4 +21,5 @@ export default interface IPharmacyRepository {
 	): Promise<PharmacyProducts>;
 	delete(id: number): Promise<void>;
     deleteByPharmacyId(pharmacyId: string): Promise<void>;
+	deleteByProductId(productId: string): Promise<void>;
 }

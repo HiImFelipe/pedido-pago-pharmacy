@@ -107,4 +107,5 @@ service PharmacyService {
     rpc createPharmacy(PharmacyCreation) returns (PharmacyWithProducts);
     rpc deletePharmacy(PharmacyId) returns (NoParams);
     rpc updatePharmacy(PharmacyWithProductIds) returns (PharmacyWithProducts);
+    rpc deleteProduct(PharmacyId) returns (NoParams);
 }
